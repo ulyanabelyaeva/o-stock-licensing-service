@@ -1,0 +1,24 @@
+version: '3.7'
+services:
+  #Добавляет метку к каждой запущенной службе. Превращается в DNS-запись для экземпляра
+  #Docker при его запуске, и именно так к ней обращаются другие службы
+  licensingservice:
+    #Docker Compose сначала пытается найти целевой образ для запуска в локальном репозитории Docker и
+    #только потом проверяет центральный репозиторий Docker Hub (http://hub.docker.com)
+    image: ostock/licensing-service:1.0-SNAPSHOT
+    #Определяет номера портов в контейнере Docker, которые должны быть доступны внешнему миру
+    ports:
+      - "8080:8080"
+    #Определяет переменные окружения в образе Docker.
+    #В данном случае определяет переменную SPRING_PROFILES_ACTIVE
+    environment:
+      - "SPRING_PROFILES_ACTIVE=dev"
+    networks:
+      #Называет сеть, к которой принадлежит сервис
+      backend:
+        aliases:
+          - "licenseservice"
+#Создает настраиваемую сеть с именем backend и с типом bridge по умолчанию
+networks:
+  backend:
+    driver: bridge
