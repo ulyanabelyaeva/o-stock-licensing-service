@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: licensing-service
+  profiles:
+    active: dev
+  config:
+    import: configserver:http://localhost:8071
+
+management:
+  endpoint:
+    health:
+      show-details: always
+  health:
+    diskspace:
+      enabled: true
+
+locale: "EN"
