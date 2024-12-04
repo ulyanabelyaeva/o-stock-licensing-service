@@ -59,4 +59,18 @@ public class LicenseController {
         return ResponseEntity.ok(licenseService.deleteLicense(licenseId));
     }
 
+    /**
+     * clientType - тип клиента для меж-сервисных вызовов
+     * - discovery требует использовать для вызова службы организаций клиента Discovery Client и стандартный класс Spring RestTemplate;
+     * - rest требует использовать для вызова службы Load Balancer расширенный шаблон RestTemplate;
+     * - feign требует использовать для вызова службы через Load Balancer клиентскую библиотеку Netflix Feign.
+     * */
+    @GetMapping(value = "/{licenseId}/{clientType}")
+    public License getLicensesWithClient(@PathVariable("organizationId") String organizationId,
+                                         @PathVariable("licenseId") String licenseId,
+                                         @PathVariable("clientType") String clientType) {
+        return licenseService.getLicense(organizationId,
+                licenseId, clientType);
+    }
+
 }

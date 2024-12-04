@@ -1,7 +1,17 @@
 package com.optimagrowth.license.configuration;
 
-import org.springframework.stereotype.Component;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
 
-@Component
+@Configuration
 public class ServiceConfig {
+
+    @LoadBalanced
+    @Bean
+    public RestTemplate getRestTemplate() {
+        return new RestTemplate();
+    }
+
 }
