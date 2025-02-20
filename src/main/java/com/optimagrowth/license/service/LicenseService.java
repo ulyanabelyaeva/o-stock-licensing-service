@@ -6,6 +6,13 @@ import com.optimagrowth.license.repository.LicenseRepository;
 import com.optimagrowth.license.service.client.OrganizationDiscoveryClient;
 import com.optimagrowth.license.service.client.OrganizationFeignClient;
 import com.optimagrowth.license.service.client.OrganizationRestTemplateClient;
+import com.optimagrowth.license.utils.UserContextHolder;
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
@@ -13,9 +20,12 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.concurrent.TimeoutException;
 
 @Service
 public class LicenseService {
+
+    private static final Logger logger = LoggerFactory.getLogger(LicenseService.class);
 
     private final OrganizationRestTemplateClient organizationRestTemplateClient;
     private final OrganizationDiscoveryClient organizationDiscoveryClient;
@@ -31,12 +41,12 @@ public class LicenseService {
                           OrganizationDiscoveryClient organizationDiscoveryClient,
                           OrganizationFeignClient organizationFeignClient,
                           LicenseRepository licenseRepository,
-                          MessageSource messages) {
+                          MessageSource messageSource) {
         this.organizationRestTemplateClient = organizationRestTemplateClient;
         this.organizationDiscoveryClient = organizationDiscoveryClient;
         this.organizationFeignClient = organizationFeignClient;
         this.licenseRepository = licenseRepository;
-        this.messages = messages;
+        this.messages = messageSource;
     }
 
     @PostConstruct
@@ -44,11 +54,36 @@ public class LicenseService {
         this.locale = Locale.forLanguageTag(localeTag);
     }
 
+    @CircuitBreaker(name = "licenseService", fallbackMethod= "buildFallbackLicense")
+    @RateLimiter(name = "licenseService", fallbackMethod = "buildFallbackLicense")
+    @Retry(name = "retryLicenseService", fallbackMethod="buildFallbackLicense")
+    @Bulkhead(name= "bulkheadLicenseService", type = Bulkhead.Type.SEMAPHORE)
     public License getLicense(String licenseId, String organizationId) {
+        logger.debug("getLicensesByOrganization Correlation id: {}", UserContextHolder.getContext().getCorrelationId());
+        sleep();
         License license = licenseRepository.findByOrganizationIdAndLicenseId(organizationId, licenseId);
         if (null == license) {
             throw new IllegalArgumentException(String.format(messages.getMessage("license.search.error.message", null, locale), licenseId, organizationId));
         }
+        return license;
+    }
+
+    private void sleep() {
+        try {
+            Thread.sleep(20_000);
+            throw new java.util.concurrent.TimeoutException();
+        } catch (InterruptedException e) {
+            System.out.println("Sleep interrupted");
+        } catch (TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private License buildFallbackLicense(String licenseId, String organizationId, Throwable t){
+        License license = new License();
+        license.setLicenseId("0000000-00-00000");
+        license.setOrganizationId(organizationId);
+        license.setProductName("Sorry no licensing information currently available");
         return license;
     }
 

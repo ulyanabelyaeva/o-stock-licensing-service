@@ -1,6 +1,7 @@
 package com.optimagrowth.license.service.client;
 
 import com.optimagrowth.license.model.Organization;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ public class OrganizationRestTemplateClient {
         this.restTemplate = restTemplate;
     }
 
+    @CircuitBreaker(name = "organizationService")
     public Organization getOrganization(String organizationId) {
         ResponseEntity<Organization> restExchange =
                 restTemplate.exchange(
