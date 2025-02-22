@@ -7,17 +7,9 @@ public class UserContextHolder {
     public static UserContext getContext() {
         UserContext context = userContext.get();
         if (context == null) {
-            context = createEmptyContext();
+            context = new UserContext();
             userContext.set(context);
         }
         return userContext.get();
-    }
-
-    public static void setContext(UserContext context) {
-        userContext.set(context);
-    }
-
-    public static UserContext createEmptyContext() {
-        return new UserContext();
     }
 }
