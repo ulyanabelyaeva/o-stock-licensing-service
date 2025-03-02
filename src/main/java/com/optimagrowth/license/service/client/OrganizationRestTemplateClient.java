@@ -10,6 +10,9 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class OrganizationRestTemplateClient {
 
+    /**
+     * Заменили стандартный RestTemplate на KeycloakRestTemplate для удобной передачи заголовка Authorization
+     * */
     private final RestTemplate restTemplate;
 
     public OrganizationRestTemplateClient(RestTemplate restTemplate) {
@@ -20,7 +23,7 @@ public class OrganizationRestTemplateClient {
     public Organization getOrganization(String organizationId) {
         ResponseEntity<Organization> restExchange =
                 restTemplate.exchange(
-                        "http://organization-service/v1/organization /{organizationId}",
+                        "http://gateway-server/organization/v1/organization/{organizationId}",
                         HttpMethod.GET, null,
                         Organization.class, organizationId);
         return restExchange.getBody();

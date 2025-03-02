@@ -12,8 +12,8 @@ import java.util.List;
 @Configuration
 public class ServiceConfig {
 
-    @LoadBalanced
     @Bean
+    @LoadBalanced
     public RestTemplate getRestTemplate() {
         RestTemplate template = new RestTemplate();
         List<ClientHttpRequestInterceptor> interceptors = template.getInterceptors();

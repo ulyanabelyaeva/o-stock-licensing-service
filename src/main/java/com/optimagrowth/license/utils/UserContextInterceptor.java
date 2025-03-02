@@ -1,7 +1,5 @@
 package com.optimagrowth.license.utils;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
@@ -12,8 +10,6 @@ import java.io.IOException;
 
 public class UserContextInterceptor implements
         ClientHttpRequestInterceptor {
-
-    private static final Logger logger = LoggerFactory.getLogger(UserContextInterceptor.class);
 
     /**
      * Вызывает intercept() до отправки HTTP-запроса с помощью RestTemplate
